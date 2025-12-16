@@ -91,21 +91,6 @@ export const BingoPage = () => {
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
         <BingoGrid />
       </div>
-
-      {openedCount === totalBoxes && (
-        <div className="flex-shrink-0 p-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-green-100 border-2 border-green-500 rounded-lg p-4 text-center">
-              <h2 className="text-xl font-bold text-green-700 mb-1">
-                🎉 Congratulations! 🎉
-              </h2>
-              <p className="text-green-600 text-sm">
-                You've opened all boxes!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
