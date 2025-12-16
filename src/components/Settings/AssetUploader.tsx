@@ -64,7 +64,7 @@ export const AssetUploader = () => {
                   className="w-full h-24 object-cover rounded border-2 border-gray-300"
                 />
                 <button
-                  onClick={() => removeAsset(asset.id)}
+                  onClick={async () => await removeAsset(asset.id)}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 
                             flex items-center justify-center opacity-0 group-hover:opacity-100 
                             transition-opacity"
@@ -76,9 +76,9 @@ export const AssetUploader = () => {
           </div>
           
           <button
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm(`Are you sure you want to clear all ${assets.length} assets?`)) {
-                clearAssets();
+                await clearAssets();
               }
             }}
             className="w-full mt-4 bg-red-500 text-white py-2 rounded-lg font-semibold

@@ -4,6 +4,11 @@ import { persist } from 'zustand/middleware';
 import { GameMode, TemplateStyle } from '../types';
 import { calculateRequiredAssets, isOddNumber } from '../utils/validation';
 import { generateRandomNumbers } from '../utils/gridUtils';
+import { 
+  storeAsset, 
+  removeAssetFromStorage, 
+  clearAllAssets as clearStorage
+} from '../utils/assetStorage';
 
 interface ConfigStore {
   gridSize: number;
@@ -12,11 +17,11 @@ interface ConfigStore {
   templateNumbers: number[];
   templateStyle: TemplateStyle;
   logoPath: string;
-  setMode: (mode: GameMode) => void;
-  setGridSize: (size: number) => void;
+  setMode: (mode: GameMode) => Promise<void>;
+  setGridSize: (size: number) => Promise<void>;
   addAssets: (files: File[]) => Promise<void>;
-  removeAsset: (id: string) => void;
-  clearAssets: () => void;
+  removeAsset: (id: string) => Promise<void>;
+  clearAssets: () => Promise<void>;
   generateRandomNumbers: () => void;
   setTemplateStyle: (style: Partial<TemplateStyle>) => void;
   isConfigValid: () => boolean;
@@ -39,27 +44,84 @@ export const useConfigStore = create<ConfigStore>()(
       },
       logoPath: '/logo.svg',
       
-      setMode: (mode) => set({ mode, assets: [], templateNumbers: [] }),
+      setMode: async (mode) => {
+        const { assets } = get();
+        // Revoke all Blob URLs
+        assets.forEach(asset => {
+          if (asset.preview) {
+            URL.revokeObjectURL(asset.preview);
+          }
+        });
+        // Clear IndexedDB
+        await clearStorage();
+        set({ mode, assets: [], templateNumbers: [] });
+      },
       
-      setGridSize: (size) => set({ gridSize: size, assets: [], templateNumbers: [] }),
+      setGridSize: async (size) => {
+        const { assets } = get();
+        // Revoke all Blob URLs
+        assets.forEach(asset => {
+          if (asset.preview) {
+            URL.revokeObjectURL(asset.preview);
+          }
+        });
+        // Clear IndexedDB
+        await clearStorage();
+        set({ gridSize: size, assets: [], templateNumbers: [] });
+      },
       
       addAssets: async (files) => {
         const newAssets = await Promise.all(
-          files.map(async (file, index) => ({
-            id: `asset-${Date.now()}-${index}`,
-            file,
-            preview: URL.createObjectURL(file)
-          }))
+          files.map(async (file, index) => {
+            const id = `asset-${Date.now()}-${index}`;
+            // Store in IndexedDB
+            await storeAsset(id, file);
+            // Create Blob URL for preview
+            const preview = URL.createObjectURL(file);
+            return {
+              id,
+              file,
+              preview
+            };
+          })
         );
         set((state) => ({ assets: [...state.assets, ...newAssets] }));
       },
       
-      removeAsset: (id) => 
-        set((state) => ({
-          assets: state.assets.filter((a) => a.id !== id)
-        })),
+      removeAsset: async (id) => {
+        const { assets } = get();
+        const asset = assets.find(a => a.id === id);
+        
+        // Revoke Blob URL to free memory
+        if (asset?.preview) {
+          URL.revokeObjectURL(asset.preview);
+        }
+        
+        // Remove from IndexedDB
+        await removeAssetFromStorage(id);
+        
+        // Remove from state
+        set({
+          assets: assets.filter((a) => a.id !== id)
+        });
+      },
       
-      clearAssets: () => set({ assets: [] }),
+      clearAssets: async () => {
+        const { assets } = get();
+        
+        // Revoke all Blob URLs to free memory
+        assets.forEach(asset => {
+          if (asset.preview) {
+            URL.revokeObjectURL(asset.preview);
+          }
+        });
+        
+        // Clear IndexedDB storage
+        await clearStorage();
+        
+        // Clear state
+        set({ assets: [] });
+      },
       
       generateRandomNumbers: () => {
         const { gridSize } = get();
