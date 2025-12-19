@@ -16,7 +16,8 @@ export const TemplateGenerator = () => {
   };
   
   const totalBoxes = gridSize * gridSize;
-  const centerIndex = Math.floor(totalBoxes / 2);
+  const hasCenter = gridSize % 2 !== 0;
+  const centerIndex = hasCenter ? Math.floor(totalBoxes / 2) : -1;
   
   return (
     <div className="space-y-6">
@@ -115,8 +116,8 @@ export const TemplateGenerator = () => {
             }}
           >
             {Array.from({ length: totalBoxes }).map((_, index) => {
-              const isCenter = index === centerIndex;
-              const numberIndex = index < centerIndex ? index : index - 1;
+              const isCenter = hasCenter && index === centerIndex;
+              const numberIndex = hasCenter && index < centerIndex ? index : (hasCenter ? index - 1 : index);
               
               return (
                 <div
@@ -135,9 +136,11 @@ export const TemplateGenerator = () => {
               );
             })}
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            ★ = Center logo position
-          </p>
+          {hasCenter && (
+            <p className="text-sm text-gray-600 mt-2">
+              ★ = Center logo position
+            </p>
+          )}
         </div>
       )}
     </div>

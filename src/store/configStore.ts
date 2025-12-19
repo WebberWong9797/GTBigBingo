@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { GameMode, TemplateStyle } from '../types';
-import { calculateRequiredAssets, isOddNumber } from '../utils/validation';
+import { calculateRequiredAssets } from '../utils/validation';
 import { generateRandomNumbers } from '../utils/gridUtils';
 import { 
   storeAsset, 
@@ -139,10 +139,10 @@ export const useConfigStore = create<ConfigStore>()(
         
         if (mode === 'custom') {
           // Allow any number of assets (including 0 - all boxes will be logos)
-          return isOddNumber(gridSize);
+          return true;
         } else {
           const required = calculateRequiredAssets(gridSize);
-          return templateNumbers.length === required && isOddNumber(gridSize);
+          return templateNumbers.length === required;
         }
       }
     }),

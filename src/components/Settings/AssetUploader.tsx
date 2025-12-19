@@ -101,7 +101,7 @@ export const AssetUploader = () => {
         <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 mt-3">
           <p className="text-yellow-700 text-sm">
             ⚠️ You have {assets.length} images (need {required}). 
-            The remaining {required - assets.length} boxes will show the center logo.
+            The remaining {required - assets.length} boxes will show the logo.
           </p>
         </div>
       )}
@@ -109,7 +109,7 @@ export const AssetUploader = () => {
       {assets.length === 0 && (
         <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-3 mt-3">
           <p className="text-gray-700 text-sm">
-            💡 No assets uploaded. All boxes will show the center logo (GT). You can still play!
+            💡 No assets uploaded. All boxes will show the logo. You can still play!
           </p>
         </div>
       )}
